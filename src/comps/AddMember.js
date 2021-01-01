@@ -1,80 +1,78 @@
 import React, { useEffect, useState } from "react";
-import { db ,storage} from "../firebase/config";
+import { db, storage } from "../firebase/config";
 import firebase from "firebase/app";
 
-
 const AddMember = () => {
-
   const [values, setValues] = useState({
-    name:"",
-    dob:"",
-    houseName:"",
-    houseId:"",
-    imgUrl:"",
-    job:"",
-    phone:"",
-    verified:0,
-    address:"",
-    landline:"",
-  })
+    name: "",
+    dob: "",
+    houseName: "",
+    houseId: "",
+    imgUrl: "",
+    job: "",
+    phone: "",
+    verified: 0,
+    address: "",
+    landline: "",
+  });
 
   const [showModal, setShowModal] = React.useState(false);
   const [houseNames, setHouseNames] = useState({});
 
-
   //image
 
-  const allInputs = {imgUrl: ''}
-    const [imageAsFile, setImageAsFile] = useState('')
-    const [imageAsUrl, setImageAsUrl] = useState(allInputs)
-
+  const allInputs = { imgUrl: "" };
+  const [imageAsFile, setImageAsFile] = useState("");
+  const [imageAsUrl, setImageAsUrl] = useState(allInputs);
 
   const handleImageAsFile = (e) => {
-    const image = e.target.files[0]
-    setImageAsFile(imageFile => (image))
-}
+    const image = e.target.files[0];
+    setImageAsFile((imageFile) => image);
+  };
 
+  const handleFireBaseUpload = (e) => {
+    console.log("start of upload");
+    if (imageAsFile === "") {
+      alert(`not an image, the image file is a ${typeof imageAsFile}`);
+    }
 
-const handleFireBaseUpload = e => {
-console.log('start of upload')
-if(imageAsFile === '' ) {
-  alert(`not an image, the image file is a ${typeof(imageAsFile)}`)
-}
-
-    var uploadTask = storage.ref().child(`/images/dir/${values.name}${values.dob}`).put(imageAsFile);
+    var uploadTask = storage
+      .ref()
+      .child(`/images/dir/${values.name}${values.dob}`)
+      .put(imageAsFile);
 
     // Register three observers:
     // 1. 'state_changed' observer, called any time the state changes
     // 2. Error observer, called on failure
     // 3. Completion observer, called on successful completion
-    uploadTask.on('state_changed', function(snapshot){
-      // Observe state change events such as progress, pause, and resume
-      // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-      var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-      console.log('Upload is ' + progress + '% done');
-  
-    }, function(error) {
-      // Handle unsuccessful uploads
-    }, function() {
-      // Handle successful uploads on complete
-      // For instance, get the download URL: https://firebasestorage.googleapis.com/...
-      uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL) {
-        console.log('File available at', downloadURL);
-        setValues({ ...values, imgUrl: downloadURL });
-        alert("Image Uploaded")
-      });
-    });
+    uploadTask.on(
+      "state_changed",
+      function (snapshot) {
+        // Observe state change events such as progress, pause, and resume
+        // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+        var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log("Upload is " + progress + "% done");
+      },
+      function (error) {
+        // Handle unsuccessful uploads
+      },
+      function () {
+        // Handle successful uploads on complete
+        // For instance, get the download URL: https://firebasestorage.googleapis.com/...
+        uploadTask.snapshot.ref.getDownloadURL().then(function (downloadURL) {
+          console.log("File available at", downloadURL);
+          setValues({ ...values, imgUrl: downloadURL });
+          alert("Image Uploaded");
+        });
+      }
+    );
+  };
 
+  /// Image over
 
-
-}
-
-
-/// Image over
-
-useEffect(() => {
-  handleRefresh();
-}, [])
+  useEffect(() => {
+    handleRefresh();
+  }, []);
   const handleRefresh = async () => {
     // setTimeout(() => {
     //   setLoading(false);
@@ -90,124 +88,120 @@ useEffect(() => {
       key: i.id,
       ...i.data(),
     }));
-     setHouseNames(tempusers);
-     console.log("hi<",tempusers);
-    
+    setHouseNames(tempusers);
+    console.log("hi<", tempusers);
   };
-  
+
   const handleChange = (name) => (e) => {
     setValues({ ...values, [name]: e.target.value });
   };
 
-const createHouseName=()=>{
-  // Alert.alert(params.hope)
-  if (values.houseName == "") {
-    alert("Error", "Name is necessary ");
-    return;
-  }
-  let temp={HouseName:values.houseName,members:[]};
+  const createHouseName = () => {
+    // Alert.alert(params.hope)
+    if (values.houseName == "") {
+      alert("Error", "Name is necessary ");
+      return;
+    }
+    let temp = { HouseName: values.houseName, members: [] };
 
-  // values.members = [];
-  db.collection("housenames")
-    .add(temp)
-    .then((ref) => {
-      console.log("Added document with ID: ", ref.id);
-      // newId = ref.id;
-      setValues({...values,houseId:ref.id});
-      console.log("Added with id",ref.id);
-      alert("House Name added")
-      // navigation.goBack();
-    })
-    .catch((err) => {
-      console.log(err.code);
-      // return;
-    });
-};
+    // values.members = [];
+    db.collection("housenames")
+      .add(temp)
+      .then((ref) => {
+        console.log("Added document with ID: ", ref.id);
+        // newId = ref.id;
+        setValues({ ...values, houseId: ref.id });
+        console.log("Added with id", ref.id);
+        alert("House Name added");
+        // navigation.goBack();
+      })
+      .catch((err) => {
+        console.log(err.code);
+        // return;
+      });
+  };
 
-  const Modal=()=>{
-    return(
+  const Modal = () => {
+    return (
       <>
-          <div
-            className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none"
-            
-          >
-            <div className="relative w-auto my-6 mx-auto max-w-3xl">
-              {/*content*/}
-              <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
-                {/*header*/}
-                <div className="flex items-start justify-between p-5 border-b border-solid border-gray-300 rounded-t">
-                  <h3 className="text-3xl font-semibold">
-                   Family Names
-                  </h3>
-                  <button
-                    className="p-1 ml-auto bg-transparent border-0 text-black opacity-5 float-right text-3xl leading-none font-semibold outline-none focus:outline-none"
-                    onClick={() => setShowModal(false)}
-                  >
-                    <span className="bg-transparent text-black opacity-5 h-6 w-6 text-2xl block outline-none focus:outline-none">
-                      X
-                    </span>
-                  </button>
-                </div>
-                {/*body*/}
-                <div className="relative p-6 flex-auto">
-
-                    <p>Click to select Family Name</p>
-
-
-                  <table class="table-auto border-collapse border border-green-800">
-                        <thead>
-                          <tr>
-                            <th>Family Name</th>
-                            <th>Members</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                        {houseNames.map(h=>{
-                         return(<>
-                          <tr className="cursor-pointer" onClick={()=>{
-                            console.log(h.HouseName)
-                            setValues({ ...values, houseName: h.HouseName, houseId: h.key  });
-                            // setValues({ ...values, houseId: h.key });
-                          }}>
-                            <td className="py-1 px-3 border border-green-600">{h.HouseName}</td>
-                           <td className=" py-1 px-3 border border-green-600">{h.members.map(m=>(<span className="mx-1">
-                              {m.name}
-                            </span>)
-                            )}</td> 
-                          </tr>
-                         </>)
-                         
-                        })}
-                          
-                         
-                        </tbody>
-                      </table>
-
-                        <p>Selected House Name: {values.houseName}</p>
-
-
-                </div>
-                {/*footer*/}
-                <div className="flex items-center justify-end p-6 border-t border-solid border-gray-300 rounded-b">
-                  
+        <div className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none">
+          <div className="relative w-auto my-6 mx-auto max-w-3xl">
+            {/*content*/}
+            <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
+              {/*header*/}
+              <div className="flex items-start justify-between p-5 border-b border-solid border-gray-300 rounded-t">
+                <h3 className="text-3xl font-semibold">Family Names</h3>
                 <button
-                    className="bg-green-500 text-white active:bg-green-600 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1"
-                    type="button"
-                    style={{ transition: "all .15s ease" }}
-                    onClick={() => setShowModal(false)}
-                  >
-                    Close
-                  </button>
-                  
-                </div>
+                  className="p-1 ml-auto bg-transparent border-0 text-black opacity-5 float-right text-3xl leading-none font-semibold outline-none focus:outline-none"
+                  onClick={() => setShowModal(false)}
+                >
+                  <span className="bg-transparent text-black opacity-5 h-6 w-6 text-2xl block outline-none focus:outline-none">
+                    X
+                  </span>
+                </button>
+              </div>
+              {/*body*/}
+              <div className="relative p-6 flex-auto">
+                <p>Click to select Family Name</p>
+
+                <table class="table-auto border-collapse border border-green-800">
+                  <thead>
+                    <tr>
+                      <th>Family Name</th>
+                      <th>Members</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {houseNames.map((h) => {
+                      return (
+                        <>
+                          <tr
+                            className="cursor-pointer"
+                            onClick={() => {
+                              console.log(h.HouseName);
+                              setValues({
+                                ...values,
+                                houseName: h.HouseName,
+                                houseId: h.key,
+                              });
+                              // setValues({ ...values, houseId: h.key });
+                            }}
+                          >
+                            <td className="py-1 px-3 border border-green-600">
+                              {h.HouseName}
+                            </td>
+                            <td className=" py-1 px-3 border border-green-600">
+                              {h.members.map((m) => (
+                                <span className="mx-1">{m.name}</span>
+                              ))}
+                            </td>
+                          </tr>
+                        </>
+                      );
+                    })}
+                  </tbody>
+                </table>
+
+                <p>Selected House Name: {values.houseName}</p>
+              </div>
+              {/*footer*/}
+              <div className="flex items-center justify-end p-6 border-t border-solid border-gray-300 rounded-b">
+                <button
+                  className="bg-green-500 text-white active:bg-green-600 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1"
+                  type="button"
+                  style={{ transition: "all .15s ease" }}
+                  onClick={() => setShowModal(false)}
+                >
+                  Close
+                </button>
               </div>
             </div>
           </div>
-          <div className="opacity-25 fixed inset-0 z-40 bg-black"></div>
-        </>
-    )
-  }
-
+        </div>
+        <div className="opacity-25 fixed inset-0 z-40 bg-black"></div>
+      </>
+    );
+  };
 
   const sendUser = async () => {
     if (values.name == "") {
@@ -218,7 +212,7 @@ const createHouseName=()=>{
       alert("House Name not slected/created ");
       return;
     }
-    let newId="";
+    let newId = "";
 
     console.log(values);
     db.collection("dirusers")
@@ -226,162 +220,235 @@ const createHouseName=()=>{
       .then((ref) => {
         console.log("Added document with ID: ", ref.id);
         newId = ref.id;
-        
       })
       .then(() => {
         console.log("here");
-        db.collection("housenames").doc(values.houseId).update({
-          members: firebase.firestore.FieldValue.arrayUnion({ name: values.name, id: newId })
-        }).then(() => {
-          console.log("Member added to House Name added");
-          alert("Successfully Added");
-          setValues({
-            name:"",
-            dob:"",
-            houseName:"",
-            houseId:"",
-            imgUrl:"",
-            job:"",
-            phone:"",
-            verified:0,
-            address:"",
-            landline:"",
+        db.collection("housenames")
+          .doc(values.houseId)
+          .update({
+            members: firebase.firestore.FieldValue.arrayUnion({
+              name: values.name,
+              id: newId,
+            }),
           })
-          setImageAsFile('');
-        })
+          .then(() => {
+            console.log("Member added to House Name added");
+            alert("Successfully Added");
+            setValues({
+              name: "",
+              dob: "",
+              houseName: "",
+              houseId: "",
+              imgUrl: "",
+              job: "",
+              phone: "",
+              verified: 0,
+              address: "",
+              landline: "",
+            });
+            setImageAsFile("");
+          });
       })
 
       .catch((err) => {
         console.log(err.code);
         // return;
       });
-
-  }
+  };
 
   return (
-    <div
-      class="font-sans h-screen w-full bg-indigo-200  flex flex-col items-center ">
-     
+    <div class="font-sans h-screen w-full bg-gray-300 flex flex-col items-center justify-center ">
       <label
         for=""
-        class="uppercase tracking-extrawide text-grey-800 text-xl font-hairline my-6 "
+        class="uppercase tracking-extrawide text-grey-800 text-xl font-bold my-6 "
       >
         Add Member
       </label>
-      <form action="">
-      <div className="flex flex-row">
-                <div class="mb-4 mx-4">
-                  <label class="block text-gray-800 text-sm font-bold mb-2" for="name">
-                      Name
-                    </label>
-                  <input value={values.name} onChange={handleChange("name")} class="shadow appearance-none border rounded  py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" type="text" />
-                
-                </div>
-                
+      <form action="" className="">
+        <div className="flex flex-row ">
+          <div class="mb-4 mx-4">
+            <label
+              class="block text-gray-800 text-sm font-bold mb-2"
+              for="name"
+            >
+              Name
+            </label>
+            <input
+              value={values.name}
+              onChange={handleChange("name")}
+              class="shadow appearance-none border rounded  py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              id="name"
+              type="text"
+            />
+          </div>
 
-                <div class="mb-4 mx-4">
-                  <label class="block text-gray-800 text-sm font-bold mb-2" for="name">
-                      DOB
-                    </label>
-                  <input value={values.dob} onChange={handleChange("dob")} class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" type="date" />
-                </div>
+          <div class="mb-4 mx-4">
+            <label
+              class="block text-gray-800 text-sm font-bold mb-2"
+              for="name"
+            >
+              DOB
+            </label>
+            <input
+              value={values.dob}
+              onChange={handleChange("dob")}
+              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              id="name"
+              type="date"
+            />
+          </div>
 
-                <div class="mb-4 mx-4">
-                  <label class="block text-gray-800 text-sm font-bold mb-2" for="name">
-                      Job
-                    </label>
-                  <input value={values.job} onChange={handleChange("job")} class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" type="text" />
-                </div>
- 
- 
-  </div>
- 
-  <div className="flex flex-row">
-  <div class="mb-4 mx-4">
-    <label class="block text-gray-800 text-sm font-bold mb-2" for="name">
-        Phone
-      </label>
-    <input value={values.phone}  onChange={handleChange("phone")} class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" type="text" />
-  </div>
+          <div class="mb-4 mx-4">
+            <label
+              class="block text-gray-800 text-sm font-bold mb-2"
+              for="name"
+            >
+              Job
+            </label>
+            <input
+              value={values.job}
+              onChange={handleChange("job")}
+              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              id="name"
+              type="text"
+            />
+          </div>
+        </div>
 
-  <div class="mb-4 mx-4">
-    <label class="block text-gray-800 text-sm font-bold mb-2" for="name">
-        LandLine
-      </label>
-    <input value={values.landline}  onChange={handleChange("landline")} class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" type="text" />
-  </div>
+        <div className="flex flex-row">
+          <div class="mb-4 mx-4">
+            <label
+              class="block text-gray-800 text-sm font-bold mb-2"
+              for="name"
+            >
+              Phone
+            </label>
+            <input
+              value={values.phone}
+              onChange={handleChange("phone")}
+              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              id="name"
+              type="text"
+            />
+          </div>
 
-  </div>
+          <div class="mb-4 mx-4">
+            <label
+              class="block text-gray-800 text-sm font-bold mb-2"
+              for="name"
+            >
+              LandLine
+            </label>
+            <input
+              value={values.landline}
+              onChange={handleChange("landline")}
+              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              id="name"
+              type="text"
+            />
+          </div>
+        </div>
 
-  <div className="flex flex-row">
-  <div class="mb-4 mx-4">
-    <label class="block text-gray-800 text-sm font-bold mb-2" for="name">
-        Address
-      </label>
-    <input value={values.address} onChange={handleChange("address")} class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" type="textarea" />
-  </div>
-  </div>
+        <div className="flex flex-row">
+          <div class="mb-4 mx-4">
+            <label
+              class="block text-gray-800 text-sm font-bold mb-2"
+              for="name"
+            >
+              Address
+            </label>
+            <input
+              value={values.address}
+              onChange={handleChange("address")}
+              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              id="name"
+              type="textarea"
+            />
+          </div>
+        </div>
 
-  <div className="flex flex-row">
-  <div class="mb-4 mx-4">
-    <label class="block text-gray-800 text-sm font-bold mb-2" for="name">
-        Select Profile Picture
-      </label>
-    <input type="file" onChange={handleImageAsFile} class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"  />
+        <div className="flex flex-row">
+          <div class="mb-4 mx-4">
+            <label
+              class="block text-gray-800 text-sm font-bold mb-2"
+              for="name"
+            >
+              Select Profile Picture
+            </label>
+            <input
+              type="file"
+              onChange={handleImageAsFile}
+              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
+          </div>
 
- 
-  </div>
+          <button
+            class="mx-4 my-7 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            type="button"
+            onClick={() => handleFireBaseUpload()}
+          >
+            Upload
+          </button>
+        </div>
 
-  <button class="mx-4 my-7 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button"  onClick={() => handleFireBaseUpload()}>
-        Upload
-      </button> 
-  </div>
+        <div className="flex flex-row">
+          <div class="mb-4 mx-4">
+            <h4 class="block text-gray-800 text-Xl font-bold mb-2" for="name">
+              House Name
+            </h4>
 
-  
-  <div className="flex flex-row">
-  <div class="mb-4 mx-4">
-    <h4 class="block text-gray-800 text-Xl font-bold mb-2" for="name">
-        House Name
-      </h4>
+            <p class="block text-gray-800 text-sm font-bold mb-2" for="name">
+              Create New House Name
+            </p>
+            <input
+              value={values.houseName}
+              onChange={handleChange("houseName")}
+              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              id="name"
+              type="textarea"
+            />
+          </div>
 
-      <p class="block text-gray-800 text-sm font-bold mb-2" for="name">
-        Create New House Name
-      </p>
-    <input value={values.houseName} onChange={handleChange("houseName")} class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" type="textarea" />
-    
-  
-  </div>
+          <div class="mb-4 flex items-center mt-11">
+            <button
+              class=" my-4 mx-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              type="button"
+              onClick={() => createHouseName()}
+            >
+              Create New House Name
+            </button>
 
-  <div class="mb-4 mx-4 mt-11">
-  <button class="mx-4 my-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button"  onClick={() => createHouseName()}>
-        Create New House Name
-      </button> 
-  
-  </div>
+            <div className="font-bold">OR</div>
 
+            <button
+              class=" my-4 mx-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              type="button"
+              onClick={() => setShowModal(true)}
+            >
+              Pick House Name
+            </button>
+          </div>
+        </div>
 
-  </div>
+        <div className="-mt-5 ml-4">
+          <p class="block text-gray-800 text-sm font-bold mb-2" for="name">
+            Selected House : {values.houseName}
+          </p>
+        </div>
 
-  <p class="mx-4 block text-gray-800 mx-4 font-bold mb-2" for="name">
-        OR
-      </p>
+        <div className="ml-4">
+          <button
+            onClick={sendUser}
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            type="button"
+          >
+            Submit
+          </button>
+        </div>
+      </form>
 
-      <button class="mx-4 my-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button"  onClick={() => setShowModal(true)}>
-        Pick House Name
-      </button>
-
-
-  
-   <div class="flex items-center justify-between">
-    <button  onClick={sendUser} class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button">
-        Submit
-      </button>
+      {showModal ? Modal() : null}
     </div>
-  </form>
-
-  {showModal ?Modal():null}
-      
-    </div>  
   );
 };
 
