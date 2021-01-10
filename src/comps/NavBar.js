@@ -1,18 +1,13 @@
 import React from "react";
 import { BrowserRouter, Link, Router } from "react-router-dom";
+import firebase from "firebase/app";
 
 
 const NavBar = () => {
   return (
     <nav class="font-sans bg-white text-center flex justify-between my-4 mx-auhref container overflow-hidden">
       <BrowserRouter>
-      <a href="/" class="block text-left">
-        <img
-          src="https://stitches.hyperyolo.com/images/logo.png"
-          class="h-10 sm:h-10 rounded-full"
-          alt="logo"
-        />
-      </a>
+      <div className="mx-4 font-bold text-xl">BMT Church </div>
       <ul class="text-sm text-gray-700 list-none p-0 flex items-center">
       <li>
           <a
@@ -30,6 +25,21 @@ const NavBar = () => {
             Add Members
           </a>
         </li>
+        <li>
+          <div
+            href="/member"
+            class="inline-block py-2 px-3 text-gray-900 hover:text-gray-700 no-underline cursor-pointer"
+            onClick={()=>{
+              firebase.auth().signOut().then(function() {
+                console.log('Signed Out');
+              }, function(error) {
+                console.error('Sign Out Error', error);
+});
+            }}
+          >Logout
+          </div>
+        </li>
+        
         
       </ul>
       </BrowserRouter>

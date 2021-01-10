@@ -21,6 +21,11 @@ const AddMember = () => {
   const [showModal, setShowModal] = React.useState(false);
   const [houseNames, setHouseNames] = useState({});
 
+  //login
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [signedIn, setSignedIn] = useState(false);
+
 
   //image
 
@@ -74,7 +79,11 @@ if(imageAsFile === '' ) {
 
 useEffect(() => {
   handleRefresh();
+  checkSignedIn();
 }, [])
+
+
+
   const handleRefresh = async () => {
     // setTimeout(() => {
     //   setLoading(false);
@@ -124,9 +133,78 @@ const createHouseName=()=>{
     });
 };
 
+const signIn=()=>{
+  firebase.auth().signInWithEmailAndPassword(email, password)
+  .then((user) => {
+    // Signed in 
+    // ...
+    console.log("signed in")
+    setSignedIn(true);
+  })
+  .catch((error) => {
+    var errorCode = error.code;
+    var errorMessage = error.message;
+    console.log("Error",error.message)
+    alert("Invalid email or password");
+  });
+}
+
+const checkSignedIn=()=>{
+  firebase.auth().onAuthStateChanged(function(user) {
+    if (user) {
+      // User is signed in.
+      setSignedIn(true);
+      console.log("Already Signed in")
+    } else {
+      // No user is signed in.
+      
+      setSignedIn(false);
+      console.log("Not currenlty Signed in")
+    }
+  });
+}
+
+const loginForm=()=>{
+  return(
+    <div className="bg-blue-300 h-screen flex flex-centre flex-col justify-center ">
+    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 flex flex-col mx-64 ">
+    <div className="font-semibold text-2xl mb-4 mt-2 ">Login to continue</div>
+    <div class="mb-4">
+      <label class="block text-grey-darker text-sm font-bold mb-2" for="username">
+        Email
+      </label>
+      <input value={email} 
+        onChange={e=>{
+          setEmail(e.target.value)
+        }}
+      class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker" id="username" type="text" placeholder="Email"/>
+    </div>
+    <div class="mb-6">
+      <label class="block text-grey-darker text-sm font-bold mb-2" for="password">
+        Password
+      </label>
+      <input value={password} 
+        onChange={e=>{
+          setPassword(e.target.value)
+        }}
+       class="shadow appearance-none border border-red rounded w-full py-2 px-3 text-grey-darker mb-3" id="password" type="password" placeholder="******************"/>
+      
+    </div>
+    <div class="bg-blue-500 hover:bg-blue-400 text-white font-semibold shadow-md text-center font-bold py-2 px-4 rounded">
+    <button onClick={signIn}  type="button">
+        Sign In
+      </button>
+      </div>
+    
+</div>
+</div>
+  )
+}
+
   const Modal=()=>{
     return(
       <>
+      
           <div
             className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none"
             
@@ -259,6 +337,8 @@ const createHouseName=()=>{
   }
 
   return (
+    <div>
+    {!signedIn?loginForm():(<>
     <div
       class="font-sans h-screen w-full bg-indigo-200  flex flex-col items-center ">
      
@@ -382,6 +462,8 @@ const createHouseName=()=>{
   {showModal ?Modal():null}
       
     </div>  
+    </>)}
+    </div>
   );
 };
 

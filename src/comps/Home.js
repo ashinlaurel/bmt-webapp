@@ -10,7 +10,7 @@ const Home = () => {
         for=""
         class="uppercase tracking-extrawide text-white text-6xl font-hairline "
       >
-        BTM App
+        BMT App
       </label>
       
     </section>
