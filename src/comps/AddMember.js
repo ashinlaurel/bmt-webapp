@@ -168,7 +168,7 @@ const loginForm=()=>{
   return(
     <div className="bg-blue-300 h-screen flex flex-centre flex-col justify-center ">
     <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 flex flex-col mx-64 ">
-    <div className="font-semibold text-2xl mb-4 mt-2 ">Login to continue</div>
+    <div className="font-semibold text-2xl mb-4 ">Login to continue</div>
     <div class="mb-4">
       <label class="block text-grey-darker text-sm font-bold mb-2" for="username">
         Email
