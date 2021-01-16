@@ -5,18 +5,24 @@ import firebase from "firebase/app";
 
 const AddMember = () => {
 
-  const [values, setValues] = useState({
+  const initval={
     name:"",
     dob:"",
-    houseName:"",
-    houseId:"",
     imgUrl:"",
     job:"",
     phone:"",
     verified:0,
     address:"",
     landline:"",
-  })
+    houseName:"",
+    houseId:"",
+  }
+  const initbaseval={
+    houseName:"",
+    houseId:"",
+  }
+  const [values, setValues] = useState([initval])
+  const [basevalues, setBaseValues] = useState(initbaseval)
 
   const [showModal, setShowModal] = React.useState(false);
   const [houseNames, setHouseNames] = useState({});
@@ -40,7 +46,7 @@ const AddMember = () => {
 }
 
 
-const handleFireBaseUpload = e => {
+const handleFireBaseUpload = (i) => {
 console.log('start of upload')
 if(imageAsFile === '' ) {
   alert(`not an image, the image file is a ${typeof(imageAsFile)}`)
@@ -65,7 +71,10 @@ if(imageAsFile === '' ) {
       // For instance, get the download URL: https://firebasestorage.googleapis.com/...
       uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL) {
         console.log('File available at', downloadURL);
-        setValues({ ...values, imgUrl: downloadURL });
+        let newlist = [...values];
+         newlist[i].imgUrl = downloadURL;
+        setValues(newlist);
+        // setValues({ ...values, imgUrl: downloadURL });
         alert("Image Uploaded")
       });
     });
@@ -105,16 +114,16 @@ useEffect(() => {
   };
   
   const handleChange = (name) => (e) => {
-    setValues({ ...values, [name]: e.target.value });
+    setBaseValues({ ...basevalues, [name]: e.target.value });
   };
 
 const createHouseName=()=>{
   // Alert.alert(params.hope)
-  if (values.houseName == "") {
-    alert("Error", "Name is necessary ");
+  if (basevalues.houseName == "") {
+    alert("Error Name is necessary ");
     return;
   }
-  let temp={HouseName:values.houseName,members:[]};
+  let temp={HouseName:basevalues.houseName,members:[]};
 
   // values.members = [];
   db.collection("housenames")
@@ -122,7 +131,7 @@ const createHouseName=()=>{
     .then((ref) => {
       console.log("Added document with ID: ", ref.id);
       // newId = ref.id;
-      setValues({...values,houseId:ref.id});
+      setBaseValues({...basevalues,houseId:ref.id});
       console.log("Added with id",ref.id);
       alert("House Name added")
       // navigation.goBack();
@@ -134,6 +143,7 @@ const createHouseName=()=>{
 };
 
 const signIn=()=>{
+  console.log("sign in attemp")
   firebase.auth().signInWithEmailAndPassword(email, password)
   .then((user) => {
     // Signed in 
@@ -166,7 +176,7 @@ const checkSignedIn=()=>{
 
 const loginForm=()=>{
   return(
-    <div className="bg-blue-300 h-screen flex flex-centre flex-col justify-center ">
+    <div className="bg-gray-300 h-screen flex flex-centre flex-col justify-center ">
     <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 flex flex-col mx-64 ">
     <div className="font-semibold text-2xl mb-4 ">Login to continue</div>
     <div class="mb-4">
@@ -190,11 +200,11 @@ const loginForm=()=>{
        class="shadow appearance-none border border-red rounded w-full py-2 px-3 text-grey-darker mb-3" id="password" type="password" placeholder="******************"/>
       
     </div>
-    <div class="bg-blue-500 hover:bg-blue-400 text-white font-semibold shadow-md text-center font-bold py-2 px-4 rounded">
-    <button onClick={signIn}  type="button">
+    {/* <div class="bg-blue-500 hover:bg-blue-400 text-white font-semibold shadow-md text-center font-bold py-2 px-4 rounded"> */}
+    <button  class="bg-blue-500 hover:bg-blue-400 text-white font-semibold shadow-md text-center font-bold py-2 px-4 rounded" onClick={()=>signIn()}  type="button">
         Sign In
       </button>
-      </div>
+      {/* </div> */}
     
 </div>
 </div>
@@ -206,10 +216,10 @@ const loginForm=()=>{
       <>
       
           <div
-            className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none"
+            className=" overflow-y-scroll max-h-screen justify-center items-center flex overflow-x-hidden  fixed inset-0 z-50 outline-none focus:outline-none"
             
           >
-            <div className="relative w-auto my-6 mx-auto max-w-3xl">
+            <div className="relative w-auto my-6 mx-auto max-w-3xl overflow-y-scroll">
               {/*content*/}
               <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
                 {/*header*/}
@@ -244,12 +254,12 @@ const loginForm=()=>{
                          return(<>
                           <tr className="cursor-pointer" onClick={()=>{
                             console.log(h.HouseName)
-                            setValues({ ...values, houseName: h.HouseName, houseId: h.key  });
+                            setBaseValues({ ...basevalues, houseName: h.HouseName, houseId: h.key  });
                             // setValues({ ...values, houseId: h.key });
                           }}>
                             <td className="py-1 px-3 border border-green-600">{h.HouseName}</td>
                            <td className=" py-1 px-3 border border-green-600">{h.members.map(m=>(<span className="mx-1">
-                              {m.name}
+                              {m.name},
                             </span>)
                             )}</td> 
                           </tr>
@@ -261,7 +271,7 @@ const loginForm=()=>{
                         </tbody>
                       </table>
 
-                        <p>Selected House Name: {values.houseName}</p>
+                        <p>Selected House Name: {basevalues.houseName}</p>
 
 
                 </div>
@@ -288,19 +298,25 @@ const loginForm=()=>{
 
 
   const sendUser = async () => {
-    if (values.name == "") {
-      alert("Error", "A Name is requires ");
+
+    values.map((item,i)=>{
+
+    
+    if (item.name == "") {
+      alert("Error", `Member ${i+1}:A Name is required `);
       return;
     }
     if (values.houseName == "" || values.houseName == "") {
-      alert("House Name not slected/created ");
+      alert(`Member ${i+1}House Name not slected/created `);
       return;
     }
     let newId="";
+    item.houseId=basevalues.houseId;
+    item.houseName=basevalues.houseName;
 
-    console.log(values);
+    console.log(item);
     db.collection("dirusers")
-      .add(values)
+      .add(item)
       .then((ref) => {
         console.log("Added document with ID: ", ref.id);
         newId = ref.id;
@@ -308,23 +324,12 @@ const loginForm=()=>{
       })
       .then(() => {
         console.log("here");
-        db.collection("housenames").doc(values.houseId).update({
-          members: firebase.firestore.FieldValue.arrayUnion({ name: values.name, id: newId })
+        db.collection("housenames").doc(item.houseId).update({
+          members: firebase.firestore.FieldValue.arrayUnion({ name: item.name, id: newId })
         }).then(() => {
           console.log("Member added to House Name added");
-          alert("Successfully Added");
-          setValues({
-            name:"",
-            dob:"",
-            houseName:"",
-            houseId:"",
-            imgUrl:"",
-            job:"",
-            phone:"",
-            verified:0,
-            address:"",
-            landline:"",
-          })
+          
+          setValues([initval]);
           setImageAsFile('');
         })
       })
@@ -333,28 +338,25 @@ const loginForm=()=>{
         console.log(err.code);
         // return;
       });
-
+      
+    })
+    alert("Successfully Added");
   }
 
-  return (
-    <div>
-    {!signedIn?loginForm():(<>
-    <div
-      class="font-sans h-screen w-full bg-indigo-200  flex flex-col items-center ">
-     
-      <label
-        for=""
-        class="uppercase tracking-extrawide text-grey-800 text-xl font-hairline my-6 "
-      >
-        Add Member
-      </label>
-      <form action="">
-      <div className="flex flex-row">
+const memberDetail=(i)=>(
+  <div className="bg-gray-300 rounded-lg p-3 m-2"> 
+  <div className="flex flex-row">
                 <div class="mb-4 mx-4">
                   <label class="block text-gray-800 text-sm font-bold mb-2" for="name">
                       Name
                     </label>
-                  <input value={values.name} onChange={handleChange("name")} class="shadow appearance-none border rounded  py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" type="text" />
+                  <input value={values[i].name} 
+                  onChange={(e) => {
+                    let newlist = [...values];
+                    newlist[i].name = e.target.value;
+                    setValues(newlist);
+                  }}
+                  class="shadow appearance-none border rounded  py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" type="text" />
                 
                 </div>
                 
@@ -363,99 +365,172 @@ const loginForm=()=>{
                   <label class="block text-gray-800 text-sm font-bold mb-2" for="name">
                       DOB
                     </label>
-                  <input value={values.dob} onChange={handleChange("dob")} class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" type="date" />
+                  <input value={values[i].dob} 
+                  onChange= {(e) => {
+                    let newlist = [...values];
+                    newlist[i].dob = e.target.value;
+                    setValues(newlist);
+                  }}
+                  class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" type="date" />
                 </div>
 
                 <div class="mb-4 mx-4">
                   <label class="block text-gray-800 text-sm font-bold mb-2" for="name">
                       Job
                     </label>
-                  <input value={values.job} onChange={handleChange("job")} class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" type="text" />
+                  <input value={values[i].job} 
+                  onChange= {(e) => {
+                    let newlist = [...values];
+                    newlist[i].job = e.target.value;
+                    setValues(newlist);
+                  }}
+                  class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" type="text" />
                 </div>
  
  
-  </div>
+       </div>
  
-  <div className="flex flex-row">
-  <div class="mb-4 mx-4">
-    <label class="block text-gray-800 text-sm font-bold mb-2" for="name">
-        Phone
-      </label>
-    <input value={values.phone}  onChange={handleChange("phone")} class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" type="text" />
-  </div>
+        <div className="flex flex-row">
+        <div class="mb-4 mx-4">
+          <label class="block text-gray-800 text-sm font-bold mb-2" for="name">
+              Phone
+            </label>
+          <input value={values[i].phone}  
+          onChange= {(e) => {
+                    let newlist = [...values];
+                    newlist[i].phone = e.target.value;
+                    setValues(newlist);
+                  }}
+          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" type="text" />
+        </div>
 
-  <div class="mb-4 mx-4">
-    <label class="block text-gray-800 text-sm font-bold mb-2" for="name">
-        LandLine
-      </label>
-    <input value={values.landline}  onChange={handleChange("landline")} class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" type="text" />
-  </div>
+        <div class="mb-4 mx-4">
+          <label class="block text-gray-800 text-sm font-bold mb-2" for="name">
+              LandLine
+            </label>
+          <input value={values[i].landline}  
+          onChange= {(e) => {
+                    let newlist = [...values];
+                    newlist[i].landline = e.target.value;
+                    setValues(newlist);
+                  }}
+          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" type="text" />
+        </div>
 
-  </div>
+        </div>
 
-  <div className="flex flex-row">
-  <div class="mb-4 mx-4">
-    <label class="block text-gray-800 text-sm font-bold mb-2" for="name">
-        Address
-      </label>
-    <input value={values.address} onChange={handleChange("address")} class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" type="textarea" />
-  </div>
-  </div>
+        <div className="flex flex-row">
+        <div class="mb-4 mx-4">
+          <label class="block text-gray-800 text-sm font-bold mb-2" for="name">
+              Address
+            </label>
+          <input value={values[i].address}
+           onChange= {(e) => {
+                    let newlist = [...values];
+                    newlist[i].address = e.target.value;
+                    setValues(newlist);
+                  }}
+          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" type="textarea" />
+        </div>
+        </div>
 
-  <div className="flex flex-row">
-  <div class="mb-4 mx-4">
-    <label class="block text-gray-800 text-sm font-bold mb-2" for="name">
-        Select Profile Picture
-      </label>
-    <input type="file" onChange={handleImageAsFile} class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"  />
+        <div className="flex flex-row">
+        <div class="mb-4 mx-4">
+          <label class="block text-gray-800 text-sm font-bold mb-2" for="name">
+              Select Profile Picture
+            </label>
+          <input type="file" onChange={handleImageAsFile} class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"  />
 
- 
-  </div>
+      
+        </div>
 
-  <button class="mx-4 my-7 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button"  onClick={() => handleFireBaseUpload()}>
-        Upload
-      </button> 
-  </div>
+        <button class="mx-4 my-7 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button"
+          onClick={() => handleFireBaseUpload(i)}>
+              Upload
+            </button> 
+        </div>
+        </div>
+)
 
-  
-  <div className="flex flex-row">
-  <div class="mb-4 mx-4">
-    <h4 class="block text-gray-800 text-Xl font-bold mb-2" for="name">
-        House Name
-      </h4>
-
-      <p class="block text-gray-800 text-sm font-bold mb-2" for="name">
-        Create New House Name
-      </p>
-    <input value={values.houseName} onChange={handleChange("houseName")} class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" type="textarea" />
+  return (
+    <div>
+    {!signedIn?loginForm():(<>
     
+    <div
+      class="font-sans h-auto min-h-screen w-full bg-gray-200  flex flex-col items-center ">
+     
+      <label
+        for=""
+        class="uppercase tracking-extrawide text-grey-800 text-xl font-hairline my-6 "
+      >
+        Add Member
+      </label>
+      <form action="">
+      
+
   
-  </div>
+  <div className="flex flex-row">
+          <div class="mb-4 ml-4 mr-1">
+            <h4 class="block text-gray-800 text-Xl font-bold mb-2" for="name">
+                House Name
+              </h4>
 
-  <div class="mb-4 mx-4 mt-11">
-  <button class="mx-4 my-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button"  onClick={() => createHouseName()}>
-        Create New House Name
-      </button> 
-  
-  </div>
+              <p class="block text-gray-800 text-sm font-bold mb-2" for="name">
+                Create New House Name
+              </p>
+            <input value={basevalues.houseName} onChange={handleChange("houseName")} class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" type="textarea" />
+            
+          
+          </div>
 
-
-  </div>
-
-  <p class="mx-4 block text-gray-800 mx-4 font-bold mb-2" for="name">
-        OR
-      </p>
-
-      <button class="mx-4 my-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button"  onClick={() => setShowModal(true)}>
+          <div class="mb-4 mx-4 mt-11">
+          <button class="ml-1 mr-4 my-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button" 
+           onClick={() => createHouseName()}>
+                Create New House Name
+              </button> 
+          
+          </div>
+          <div class="mb-4 mx-4 mt-16">
+          <p class="mx-4 block text-gray-800 mx-4 font-bold mb-2" for="name">
+            OR
+          </p>
+          </div>
+     
+     
+      <div class="mb-4 mx-4 mt-11">
+      <button class="mx-4 my-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button"  
+      onClick={() => setShowModal(true)}>
         Pick House Name
       </button>
+      </div>
 
+      </div>
 
   
-   <div class="flex items-center justify-between">
-    <button  onClick={sendUser} class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button">
+      {values.map((item,num)=>(
+        <>
+        {memberDetail(num)}
+      </>)
+      )}
+
+      
+   <div class="flex items-center justify-begining mb-64">
+   
+    <button  onClick={sendUser} class=" mx-4 bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button">
         Submit
       </button>
+
+      <button  
+   onClick={()=>{
+    let newitem = [...values];
+                let add = initval;
+                newitem.push(add);
+                setValues(newitem);
+   }} 
+   class="mx-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button">
+        Add Member
+      </button>
+
     </div>
   </form>
 
