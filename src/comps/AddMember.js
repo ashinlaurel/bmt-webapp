@@ -313,9 +313,9 @@ const loginForm=()=>{
       return;
     }
     if(FamilyHead.toLowerCase() =="yes"||FamilyHead.toLowerCase()=="y" ){
-      item.isFamilyHead=true;
+      item.FamilyHead=true;
     }else{
-      item.isFamilyHead=false;
+      item.FamilyHead=false;
     }
     let newId="";
     item.houseId=basevalues.houseId;
