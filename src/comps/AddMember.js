@@ -16,6 +16,7 @@ const AddMember = () => {
     landline:"",
     houseName:"",
     houseId:"",
+    
   }
   const initbaseval={
     houseName:"",
@@ -26,6 +27,7 @@ const AddMember = () => {
 
   const [showModal, setShowModal] = React.useState(false);
   const [houseNames, setHouseNames] = useState({});
+  const [FamilyHead, setFamilyHead] = useState("no")
 
   //login
   const [email, setEmail] = useState("");
@@ -310,6 +312,11 @@ const loginForm=()=>{
       alert(`Member ${i+1}House Name not slected/created `);
       return;
     }
+    if(FamilyHead.toLowerCase() =="yes"||FamilyHead.toLowerCase()=="y" ){
+      item.isFamilyHead=true;
+    }else{
+      item.isFamilyHead=false;
+    }
     let newId="";
     item.houseId=basevalues.houseId;
     item.houseName=basevalues.houseName;
@@ -391,6 +398,17 @@ const memberDetail=(i)=>(
        </div>
  
         <div className="flex flex-row">
+        <div class="mb-4 mx-4">
+          <label class="block text-gray-800 text-sm font-bold mb-2" for="name">
+              Is Family head?
+            </label>
+          <input value={FamilyHead}  
+          onChange= {(e) => {
+                    setFamilyHead(e.target.value)
+                  }}
+          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" type="text" />
+        </div>
+
         <div class="mb-4 mx-4">
           <label class="block text-gray-800 text-sm font-bold mb-2" for="name">
               Phone
