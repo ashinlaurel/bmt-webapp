@@ -16,6 +16,7 @@ const AddMember = () => {
     landline:"",
     houseName:"",
     houseId:"",
+    FamilyHead:"",
     
   }
   const initbaseval={
@@ -27,7 +28,7 @@ const AddMember = () => {
 
   const [showModal, setShowModal] = React.useState(false);
   const [houseNames, setHouseNames] = useState({});
-  const [FamilyHead, setFamilyHead] = useState("no")
+  // const [FamilyHead, setFamilyHead] = useState("no")
 
   //login
   const [email, setEmail] = useState("");
@@ -54,7 +55,7 @@ if(imageAsFile === '' ) {
   alert(`not an image, the image file is a ${typeof(imageAsFile)}`)
 }
 
-    var uploadTask = storage.ref().child(`/images/dir/${values.name}${values.dob}`).put(imageAsFile);
+    var uploadTask = storage.ref().child(`/images/dir/${values[i].name}${new Date()}`).put(imageAsFile);
 
     // Register three observers:
     // 1. 'state_changed' observer, called any time the state changes
@@ -312,7 +313,7 @@ const loginForm=()=>{
       alert(`Member ${i+1}House Name not slected/created `);
       return;
     }
-    if(FamilyHead.toLowerCase() =="yes"||FamilyHead.toLowerCase()=="y" ){
+    if(item.FamilyHead.toLowerCase() =="yes"||item.FamilyHead.toLowerCase()=="y" ){
       item.FamilyHead=true;
     }else{
       item.FamilyHead=false;
@@ -402,9 +403,11 @@ const memberDetail=(i)=>(
           <label class="block text-gray-800 text-sm font-bold mb-2" for="name">
               Is Family head?
             </label>
-          <input value={FamilyHead}  
+          <input value={values[i].FamilyHead}  
           onChange= {(e) => {
-                    setFamilyHead(e.target.value)
+                    let newlist = [...values];
+                    newlist[i].FamilyHead = e.target.value;
+                    setValues(newlist);
                   }}
           class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" type="text" />
         </div>
